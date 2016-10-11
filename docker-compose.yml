@@ -1,0 +1,135 @@
+version: '2'
+
+services:
+  # NGINX Reverse Proxy
+  proxy:
+    container_name: proxy
+    image: jwilder/nginx-proxy   
+    networks:
+      front:
+        aliases:
+          - ${DOCKER_DEV_DOMAIN}
+    ports:
+      - 80:80
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+  
+  # NGINX web server
+  nginx:
+    container_name: nginx
+    depends_on:
+      - php
+    environment:
+      - VIRTUAL_HOST=${DOCKER_DEV_DOMAIN}
+    image: nginx:latest
+    links:
+      - php
+    networks:
+      front:
+        aliases:
+          - ${DOCKER_DEV_DOMAIN}
+    restart: always
+    volumes:
+      - "./docker/nginx/conf.d:/etc/nginx/conf.d"
+    volumes_from:
+      - php
+  
+  # PHP 7 (Supports: Composer, WP-CLI, X-DEBUG )
+  php:
+    build: ./docker/php-fpm
+    container_name: php
+    depends_on:
+      - mysql
+      - themes
+      - plugins
+      - uploads
+    environment:
+      - WP_INSTALLATION_TYPE
+      - DOCKER_DEV_DOMAIN
+    links:
+      - mysql
+      - memcached
+      - mailhog
+      - themes
+      - plugins
+    networks:
+      - "front"
+      - "back"
+    restart: always
+    volumes:
+      - "./docker/php-fpm/php.ini:/usr/local/etc/php/php.ini"
+      - "./docker/php-fpm/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini"
+      - "./docker/wordpress/wp-config.php:/var/www/public/wp-config.php"
+      - "./docker/wordpress/object-cache.php:/var/www/public/wp-content/object-cache.php"
+      - "./docker/php-fpm/composer.json:/var/www/public/wp-content/composer.json"
+      - "public:/var/www/public"
+    volumes_from:
+      - themes
+      - plugins
+      - uploads
+  
+  # MySQL
+  mysql:
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${WP_DB_NAME}
+      MYSQL_USER: ${WP_DB_USER}
+      MYSQL_PASSWORD: ${WP_DB_PASSWORD}
+    image: mysql:latest
+    networks:
+      - "back"
+    ports:
+      - 33061:3306
+    volumes:
+      - "./.data/db:/var/lib/mysql"
+  
+  # Memcached Persistent Object Cache
+  memcached:
+    container_name: memcached
+    image: phpdockerio/memcached:latest
+    networks:
+      - "back"
+  
+  # Mailhog Local Dev Mail Catcher
+  mailhog:
+    container_name: mailhog
+    image: phpdockerio/mailhog:latest
+    networks:
+      - "back"
+    ports:
+      - "8081:8025"
+
+  # Theme Code Volume Container
+  themes:
+    build: ./docker/wordpress
+    container_name: themes
+    networks:
+      - "front"
+    volumes:
+      - "./code/themes:/var/www/public/wp-content/themes"
+  
+  # Plugin Code Volume Container
+  plugins:
+    build: ./docker/wordpress
+    container_name: plugins
+    volumes:
+      - "./code/plugins:/var/www/public/wp-content/plugins"
+    networks:
+      - "front"
+  
+  # Uploads Volume Container
+  uploads:
+    build: ./docker/wordpress
+    container_name: uploads
+    volumes:
+      - "./.data/uploads:/var/www/public/wp-content/uploads"
+    networks:
+      - "front"
+
+volumes:
+  public:
+
+networks:
+  front: {}
+  back: {}

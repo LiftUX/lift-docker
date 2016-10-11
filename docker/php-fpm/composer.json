@@ -1,0 +1,77 @@
+{
+    "name": "lift/wordpress",
+    "description": "WordPress Project by Lift",
+    "type": "git",
+    "license": "GPL",
+    "authors": [
+        {
+            "name": "Chris Wallace",
+            "email": "chris@liftux.com",
+            "role": "Technical Director"
+        },
+        {
+            "name": "Brad Miller",
+            "email": "brad@liftux.com",
+            "role": "Creative Director"
+        },
+        {
+            "name": "Angela Crist",
+            "email": "angela@liftux.com",
+            "role": "Project Manager"
+        },
+        {
+            "name": "Christian Chung",
+            "email": "christian@liftux.com",
+            "role": "Developer"
+        },
+        {
+            "name": "Anthony Garand",
+            "email": "garand@liftux.com",
+            "role": "Developer"
+        },
+        {
+            "name": "Matt Pritchett",
+            "email": "matt@liftux.com",
+            "role": "Developer"
+        },
+        {
+            "name": "Gedy Leon",
+            "email": "gedy@liftux.com",
+            "role": "Designer"
+        }
+    ],
+    "minimum-stability": "dev",
+
+    "repositories": [
+        {
+            "type":"composer",
+            "url":"https://wpackagist.org"
+        }
+    ],
+
+    "require": {
+    },
+
+    "require-dev": {
+        "wpackagist-plugin/vip-scanner": "dev-trunk",
+        "wpackagist-plugin/debug-bar": "dev-trunk",
+        "wpackagist-plugin/debug-bar-extender": "dev-trunk",
+        "wpackagist-plugin/debug-bar-slow-actions": "dev-trunk",
+        "wpackagist-plugin/debug-bar-cron": "dev-trunk",
+        "wpackagist-plugin/fg-debug-bar-rewrite-rules": "dev-trunk"
+    },
+
+    "config": {
+        "vendor-dir": "plugins/_vendor"
+    },
+
+    "extra": {
+        "installer-paths": {
+            "plugins/{$name}/": ["type:wordpress-plugin"]
+        }
+    },
+    
+    "autoload": {
+        "classmap": []
+    }
+}
